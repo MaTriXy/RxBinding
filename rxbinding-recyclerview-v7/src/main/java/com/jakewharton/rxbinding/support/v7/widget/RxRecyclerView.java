@@ -11,6 +11,19 @@ import rx.functions.Action1;
  * actions} for {@link RecyclerView}.
  */
 public final class RxRecyclerView {
+
+  /**
+   * Create an observable of child attach state change events on {@code recyclerView}.
+   * <p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code recyclerView}.
+   * Unsubscribe to free this reference.
+   */
+  @CheckResult @NonNull
+  public static Observable<RecyclerViewChildAttachStateChangeEvent> childAttachStateChangeEvents(
+      @NonNull RecyclerView recyclerView) {
+    return Observable.create(new RecyclerViewChildAttachStateChangeEventOnSubscribe(recyclerView));
+  }
+
   /**
    * Create an observable of scroll events on {@code recyclerView}.
    * <p>
@@ -24,15 +37,14 @@ public final class RxRecyclerView {
   }
 
   /**
-   * Create an observable of scroll state change events on {@code recyclerView}.
+   * Create an observable of scroll state changes on {@code recyclerView}.
    * <p>
    * <em>Warning:</em> The created observable keeps a strong reference to {@code recyclerView}.
    * Unsubscribe to free this reference.
    */
   @CheckResult @NonNull
-  public static Observable<RecyclerViewScrollStateChangeEvent> scrollStateChangeEvents(
-      @NonNull RecyclerView recyclerView) {
-    return Observable.create(new RecyclerViewScrollStateChangeEventOnSubscribe(recyclerView));
+  public static Observable<Integer> scrollStateChanges(@NonNull RecyclerView recyclerView) {
+    return Observable.create(new RecyclerViewScrollStateChangeOnSubscribe(recyclerView));
   }
 
   private RxRecyclerView() {

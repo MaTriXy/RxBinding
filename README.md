@@ -10,27 +10,32 @@ Download
 
 Platform bindings:
 ```groovy
-compile 'com.jakewharton.rxbinding:rxbinding:0.2.0'
+compile 'com.jakewharton.rxbinding:rxbinding:0.3.0'
 ```
 
 'support-v4' library bindings:
 ```groovy
-compile 'com.jakewharton.rxbinding:rxbinding-support-v4:0.2.0'
+compile 'com.jakewharton.rxbinding:rxbinding-support-v4:0.3.0'
 ```
 
 'appcompat-v7' library bindings:
 ```groovy
-compile 'com.jakewharton.rxbinding:rxbinding-appcompat-v7:0.2.0'
+compile 'com.jakewharton.rxbinding:rxbinding-appcompat-v7:0.3.0'
 ```
 
 'design' library bindings:
 ```groovy
-compile 'com.jakewharton.rxbinding:rxbinding-design:0.2.0'
+compile 'com.jakewharton.rxbinding:rxbinding-design:0.3.0'
 ```
 
 'recyclerview-v7' library bindings:
 ```groovy
-compile 'com.jakewharton.rxbinding:rxbinding-recyclerview-v7:0.2.0'
+compile 'com.jakewharton.rxbinding:rxbinding-recyclerview-v7:0.3.0'
+```
+
+'leanback-v17' library bindings:
+```groovy
+compile 'com.jakewharton.rxbinding:rxbinding-leanback-v17:0.3.0'
 ```
 
 Kotlin extension methods for all of the above libraries are available by appending `-kotlin` to the
@@ -64,10 +69,11 @@ should be in the present tense, regardless of the platform's use (e.g., selected
 When there are multiple versions of the same verb, prefix with a qualifying noun or adjective that
 differentiates (e.g., click vs. long click, item selection vs. nothing selection).
 
-Each observable method factory also has an overload named in the singular and suffixed with
-"Events". This overload emits wrapper objects containing additional information about the event
-(origin view, timestamp). The name of the wrapper object is the concatenation of the view simple
-name, the verb (with optional adverb prefix), and "Event". These classes are in the public API.
+If the listener callback provides more than one parameter of useful data, a factory method overload
+named in the singular and suffixed with "Events" is included. This overload emits wrapper objects
+containing all the additional information about the event. The name of the wrapper object is the
+concatenation of the view simple name, the verb (with optional adverb prefix), and "Event". These
+classes are in the public API.
 
 Events for listeners with multiple methods should share an abstract base class. The naming follows
 the same rules as a normal event class but without the qualifying prefix. An inner `enum` named

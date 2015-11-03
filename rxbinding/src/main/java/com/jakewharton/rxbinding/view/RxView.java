@@ -1,10 +1,12 @@
 package com.jakewharton.rxbinding.view;
 
+import android.annotation.TargetApi;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import com.jakewharton.rxbinding.internal.Functions;
 import rx.Observable;
 import rx.functions.Action1;
@@ -12,6 +14,7 @@ import rx.functions.Func0;
 import rx.functions.Func1;
 
 import static com.jakewharton.rxbinding.internal.Preconditions.checkArgument;
+import static android.os.Build.VERSION_CODES.M;
 
 /**
  * Static factory methods for creating {@linkplain Observable observables} and {@linkplain Action1
@@ -26,7 +29,7 @@ public final class RxView {
    * to free this reference.
    */
   @CheckResult @NonNull
-  public static Observable<Object> attaches(@NonNull View view) {
+  public static Observable<Void> attaches(@NonNull View view) {
     return Observable.create(new ViewAttachesOnSubscribe(view, true));
   }
 
@@ -49,7 +52,7 @@ public final class RxView {
    * to free this reference.
    */
   @CheckResult @NonNull
-  public static Observable<Object> detaches(@NonNull View view) {
+  public static Observable<Void> detaches(@NonNull View view) {
     return Observable.create(new ViewAttachesOnSubscribe(view, false));
   }
 
@@ -64,22 +67,8 @@ public final class RxView {
    * clicks. Only one observable can be used for a view at a time.
    */
   @CheckResult @NonNull
-  public static Observable<Object> clicks(@NonNull View view) {
+  public static Observable<Void> clicks(@NonNull View view) {
     return Observable.create(new ViewClickOnSubscribe(view));
-  }
-
-  /**
-   * Create an observable of click events for {@code view}.
-   * <p>
-   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
-   * to free this reference.
-   * <p>
-   * <em>Warning:</em> The created observable uses {@link View#setOnClickListener} to observe
-   * clicks. Only one observable can be used for a view at a time.
-   */
-  @CheckResult @NonNull
-  public static Observable<ViewClickEvent> clickEvents(@NonNull View view) {
-    return Observable.create(new ViewClickEventOnSubscribe(view));
   }
 
   /**
@@ -115,35 +104,17 @@ public final class RxView {
   }
 
   /**
-   * Create an observable of drag events for {@code view}.
+   * Create an observable for draws on {@code view}.
    * <p>
    * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
    * to free this reference.
    * <p>
-   * <em>Warning:</em> The created observable uses {@link View#setOnDragListener} to observe
-   * drags. Only one observable can be used for a view at a time.
+   * <em>Warning:</em> The created observable uses {@link ViewTreeObserver#addOnDrawListener} to observe
+   * draws. Multiple observables can be used for a view at a time.
    */
   @CheckResult @NonNull
-  public static Observable<ViewDragEvent> dragEvents(@NonNull View view) {
-    return Observable.create(new ViewDragEventOnSubscribe(view, Functions.FUNC1_ALWAYS_TRUE));
-  }
-
-  /**
-   * Create an observable of drag events for {@code view}.
-   * <p>
-   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
-   * to free this reference.
-   * <p>
-   * <em>Warning:</em> The created observable uses {@link View#setOnDragListener} to observe
-   * drags. Only one observable can be used for a view at a time.
-   *
-   * @param handled Function invoked with each value to determine the return value of the
-   * underlying {@link View.OnDragListener}.
-   */
-  @CheckResult @NonNull
-  public static Observable<ViewDragEvent> dragEvents(@NonNull View view,
-      @NonNull Func1<? super ViewDragEvent, Boolean> handled) {
-    return Observable.create(new ViewDragEventOnSubscribe(view, handled));
+  public static Observable<Void> draws(@NonNull View view) {
+    return Observable.create(new ViewTreeObserverDrawOnSubscribe(view));
   }
 
   /**
@@ -162,21 +133,74 @@ public final class RxView {
     return Observable.create(new ViewFocusChangeOnSubscribe(view));
   }
 
+  /**
+   * Create an observable which emits on {@code view} globalLayout events. The emitted value is
+   * unspecified and should only be used as notification.
+   * <p></p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
+   * to free this reference.
+   * <p>
+   * <em>Warning:</em> The created observable uses {@link ViewTreeObserver#addOnGlobalLayoutListener} to observe
+   * globalLayouts. Multiple observables can be used for a view at a time.
+   */
+  @CheckResult @NonNull
+  public static Observable<Void> globalLayouts(@NonNull View view) {
+    return Observable.create(new ViewTreeObserverGlobalLayoutOnSubscribe(view));
+  }
 
   /**
-   * Create an observable of focus-change events for {@code view}.
+   * Create an observable of hover events for {@code view}.
    * <p>
    * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
    * to free this reference.
    * <p>
-   * <em>Warning:</em> The created observable uses {@link View#setOnFocusChangeListener} to observe
-   * focus change. Only one observable can be used for a view at a time.
-   * <p>
-   * <em>Note:</em> A value will be emitted immediately on subscribe.
+   * <em>Warning:</em> The created observable uses {@link View#setOnHoverListener} to observe
+   * touches. Only one observable can be used for a view at a time.
    */
   @CheckResult @NonNull
-  public static Observable<ViewFocusChangeEvent> focusChangeEvents(@NonNull View view) {
-    return Observable.create(new ViewFocusChangeEventOnSubscribe(view));
+  public static Observable<MotionEvent> hovers(@NonNull View view) {
+    return hovers(view, Functions.FUNC1_ALWAYS_TRUE);
+  }
+
+  /**
+   * Create an observable of hover events for {@code view}.
+   * <p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
+   * to free this reference.
+   * <p>
+   * <em>Warning:</em> The created observable uses {@link View#setOnHoverListener} to observe
+   * touches. Only one observable can be used for a view at a time.
+   *
+   * @param handled Function invoked with each value to determine the return value of the
+   * underlying {@link View.OnHoverListener}.
+   */
+  @CheckResult @NonNull
+  public static Observable<MotionEvent> hovers(@NonNull View view,
+      @NonNull Func1<? super MotionEvent, Boolean> handled) {
+    return Observable.create(new ViewHoverOnSubscribe(view, handled));
+  }
+
+  /**
+   * Create an observable which emits on {@code view} layout changes. The emitted value is
+   * unspecified and should only be used as notification.
+   * <p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
+   * to free this reference.
+   */
+  @CheckResult @NonNull
+  public static Observable<Void> layoutChanges(@NonNull View view) {
+    return Observable.create(new ViewLayoutChangeOnSubscribe(view));
+  }
+
+  /**
+   * Create an observable of layout-change events for {@code view}.
+   * <p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
+   * to free this reference.
+   */
+  @CheckResult @NonNull
+  public static Observable<ViewLayoutChangeEvent> layoutChangeEvents(@NonNull View view) {
+    return Observable.create(new ViewLayoutChangeEventOnSubscribe(view));
   }
 
   /**
@@ -190,7 +214,7 @@ public final class RxView {
    * long clicks. Only one observable can be used for a view at a time.
    */
   @CheckResult @NonNull
-  public static Observable<Object> longClicks(@NonNull View view) {
+  public static Observable<Void> longClicks(@NonNull View view) {
     return Observable.create(new ViewLongClickOnSubscribe(view, Functions.FUNC0_ALWAYS_TRUE));
   }
 
@@ -208,40 +232,50 @@ public final class RxView {
    * underlying {@link View.OnLongClickListener}.
    */
   @CheckResult @NonNull
-  public static Observable<Object> longClicks(@NonNull View view, @NonNull Func0<Boolean> handled) {
+  public static Observable<Void> longClicks(@NonNull View view, @NonNull Func0<Boolean> handled) {
     return Observable.create(new ViewLongClickOnSubscribe(view, handled));
   }
 
   /**
-   * Create an observable of long-clicks events for {@code view}.
+   * Create an observable for pre-draws on {@code view}.
    * <p>
    * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
    * to free this reference.
    * <p>
-   * <em>Warning:</em> The created observable uses {@link View#setOnLongClickListener} to observe
-   * long clicks. Only one observable can be used for a view at a time.
+   * <em>Warning:</em> The created observable uses {@link ViewTreeObserver#addOnPreDrawListener} to observe
+   * preDraws. Multiple observables can be used for a view at a time.
    */
   @CheckResult @NonNull
-  public static Observable<ViewLongClickEvent> longClickEvents(@NonNull View view) {
-    return Observable.create(new ViewLongClickEventOnSubscribe(view, Functions.FUNC1_ALWAYS_TRUE));
+  public static Observable<Void> preDraws(@NonNull View view,
+      @NonNull Func0<Boolean> proceedDrawingPass) {
+    return Observable.create(new ViewTreeObserverPreDrawOnSubscribe(view, proceedDrawingPass));
   }
 
   /**
-   * Create an observable of long-click events for {@code view}.
+   * Create an observable of scroll-change events for {@code view}.
+   * <p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
+   * to free this reference.
+   */
+  @TargetApi(M)
+  @CheckResult @NonNull
+  public static Observable<ViewScrollChangeEvent> scrollChangeEvents(@NonNull View view) {
+    return Observable.create(new ViewScrollChangeEventOnSubscribe(view));
+  }
+
+  /**
+   * Create an observable of integers representing a new system UI visibility for {@code view}.
    * <p>
    * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
    * to free this reference.
    * <p>
-   * <em>Warning:</em> The created observable uses {@link View#setOnLongClickListener} to observe
-   * long clicks. Only one observable can be used for a view at a time.
-   *
-   * @param handled Function invoked with each value to determine the return value of the
-   * underlying {@link View.OnLongClickListener}.
+   * <em>Warning:</em> The created observable uses
+   * {@link View#setOnSystemUiVisibilityChangeListener} to observe system UI visibility changes.
+   * Only one observable can be used for a view at a time.
    */
   @CheckResult @NonNull
-  public static Observable<ViewLongClickEvent> longClickEvents(@NonNull View view,
-      @NonNull Func1<? super ViewLongClickEvent, Boolean> handled) {
-    return Observable.create(new ViewLongClickEventOnSubscribe(view, handled));
+  public static Observable<Integer> systemUiVisibilityChanges(@NonNull View view) {
+    return Observable.create(new ViewSystemUiVisibilityChangeOnSubscribe(view));
   }
 
   /**
@@ -274,38 +308,6 @@ public final class RxView {
   public static Observable<MotionEvent> touches(@NonNull View view,
       @NonNull Func1<? super MotionEvent, Boolean> handled) {
     return Observable.create(new ViewTouchOnSubscribe(view, handled));
-  }
-
-  /**
-   * Create an observable of touch events for {@code view}.
-   * <p>
-   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
-   * to free this reference.
-   * <p>
-   * <em>Warning:</em> The created observable uses {@link View#setOnTouchListener} to observe
-   * touches. Only one observable can be used for a view at a time.
-   */
-  @CheckResult @NonNull
-  public static Observable<ViewTouchEvent> touchEvents(@NonNull View view) {
-    return touchEvents(view, Functions.FUNC1_ALWAYS_TRUE);
-  }
-
-  /**
-   * Create an observable of touch events for {@code view}.
-   * <p>
-   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
-   * to free this reference.
-   * <p>
-   * <em>Warning:</em> The created observable uses {@link View#setOnTouchListener} to observe
-   * touches. Only one observable can be used for a view at a time.
-   *
-   * @param handled Function invoked with each value to determine the return value of the
-   * underlying {@link View.OnTouchListener}.
-   */
-  @CheckResult @NonNull
-  public static Observable<ViewTouchEvent> touchEvents(@NonNull View view,
-      @NonNull Func1<? super ViewTouchEvent, Boolean> handled) {
-    return Observable.create(new ViewTouchEventOnSubscribe(view, handled));
   }
 
   /**

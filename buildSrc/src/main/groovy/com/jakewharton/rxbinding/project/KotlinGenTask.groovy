@@ -199,7 +199,7 @@ class KotlinGenTask extends SourceTask {
 
       StringBuilder builder = new StringBuilder()
       builder.append("<")
-      params.each { p -> builder.append("${p.name} : ${p.typeBound[0].name}") }
+      params.each { p -> builder.append("${p.name} : ${resolveKotlinType(p.typeBound[0])}") }
       builder.append(">")
       return builder.toString()
     }
@@ -244,12 +244,18 @@ class KotlinGenTask extends SourceTask {
       builder.append(typeParameters ? typeParameters + " " : "")
 
       // return type
-      builder.append("$extendedClass.${name}($fParams): ${resolveKotlinType(returnType)}")
+      def kotlinType = resolveKotlinType(returnType)
+      builder.append("$extendedClass.${name}($fParams): ${kotlinType}")
 
       builder.append(" = ")
 
       // target method call
       builder.append("$bindingClass.$name(${jParams ? "this, $jParams" : "this"})")
+
+      // Void --> Unit mapping
+      if (kotlinType.equals("Observable<Unit>")) {
+        builder.append(".map { Unit }")
+      }
 
       return builder.toString()
     }
@@ -270,7 +276,13 @@ class KotlinGenTask extends SourceTask {
       return resolveKotlinTypeByName(inputType.toString())
     } else if (inputType instanceof WildcardType) {
       WildcardType wc = inputType as WildcardType
-      return "in ${resolveKotlinType(wc.super)}"
+      if (wc.super) {
+        return "in ${resolveKotlinType(wc.super)}"
+      } else if (wc.extends) {
+        return "out ${resolveKotlinType(wc.extends)}"
+      } else {
+        throw IllegalStateException("Wildcard with no super or extends")
+      }
     } else {
       throw new NotImplementedException()
     }
@@ -280,6 +292,8 @@ class KotlinGenTask extends SourceTask {
     switch (input) {
       case "Object":
         return "Any"
+      case "Void":
+        return "Unit"
       case "Integer":
         return "Int"
       case "int":

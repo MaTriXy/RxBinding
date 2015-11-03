@@ -1,5 +1,6 @@
 package com.jakewharton.rxbinding.widget
 
+import android.support.annotation.ColorInt
 import android.widget.TextView
 import com.jakewharton.rxbinding.internal.Functions
 import rx.Observable
@@ -77,6 +78,26 @@ public inline fun TextView.textChanges(): Observable<CharSequence> = RxTextView.
 public inline fun TextView.textChangeEvents(): Observable<TextViewTextChangeEvent> = RxTextView.textChangeEvents(this)
 
 /**
+ * Create an observable of before text change events for `view`.
+ * 
+ * *Warning:* The created observable keeps a strong reference to `view`. Unsubscribe
+ * to free this reference.
+ * 
+ * *Note:* A value will be emitted immediately on subscribe.
+ */
+public inline fun TextView.beforeTextChangeEvents(): Observable<TextViewBeforeTextChangeEvent> = RxTextView.beforeTextChangeEvents(this)
+
+/**
+ * Create an observable of after text change events for `view`.
+ * 
+ * *Warning:* The created observable keeps a strong reference to `view`. Unsubscribe
+ * to free this reference.
+ * 
+ * *Note:* A value will be emitted immediately on subscribe.
+ */
+public inline fun TextView.afterTextChangeEvents(): Observable<TextViewAfterTextChangeEvent> = RxTextView.afterTextChangeEvents(this)
+
+/**
  * An action which sets the text property of `view` with character sequences.
  * 
  * *Warning:* The created observable keeps a strong reference to `view`. Unsubscribe
@@ -91,3 +112,43 @@ public inline fun TextView.text(): Action1<in CharSequence> = RxTextView.text(th
  * to free this reference.
  */
 public inline fun TextView.textRes(): Action1<in Int> = RxTextView.textRes(this)
+
+/**
+ * An action which sets the error property of `view` with character sequences.
+ * 
+ * *Warning:* The created observable keeps a strong reference to `view`. Unsubscribe
+ * to free this reference.
+ */
+public inline fun TextView.error(): Action1<in CharSequence> = RxTextView.error(this)
+
+/**
+ * An action which sets the error property of `view` string resource IDs.
+ * 
+ * *Warning:* The created observable keeps a strong reference to `view`. Unsubscribe
+ * to free this reference.
+ */
+public inline fun TextView.errorRes(): Action1<in Int> = RxTextView.errorRes(this)
+
+/**
+ * An action which sets the hint property of `view` with character sequences.
+ * 
+ * *Warning:* The created observable keeps a strong reference to `view`. Unsubscribe
+ * to free this reference.
+ */
+public inline fun TextView.hint(): Action1<in CharSequence> = RxTextView.hint(this)
+
+/**
+ * An action which sets the hint property of `view` string resource IDs.
+ * 
+ * *Warning:* The created observable keeps a strong reference to `view`. Unsubscribe
+ * to free this reference.
+ */
+public inline fun TextView.hintRes(): Action1<in Int> = RxTextView.hintRes(this)
+
+/**
+ * An action which sets the color property of `view` with color integer.
+ * 
+ * *Warning:* The created observable keeps a strong reference to `view`. Unsubscribe
+ * to free this reference.
+ */
+public inline fun TextView.color(): Action1<in Int> = RxTextView.color(this)

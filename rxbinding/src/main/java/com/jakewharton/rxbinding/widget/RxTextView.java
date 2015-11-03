@@ -1,6 +1,7 @@
 package com.jakewharton.rxbinding.widget;
 
 import android.support.annotation.CheckResult;
+import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.widget.TextView;
 import com.jakewharton.rxbinding.internal.Functions;
@@ -100,7 +101,33 @@ public final class RxTextView {
    */
   @CheckResult @NonNull
   public static Observable<TextViewTextChangeEvent> textChangeEvents(@NonNull TextView view) {
-    return Observable.create(new TextViewTextEventOnSubscribe(view));
+    return Observable.create(new TextViewTextChangeEventOnSubscribe(view));
+  }
+
+  /**
+   * Create an observable of before text change events for {@code view}.
+   * <p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
+   * to free this reference.
+   * <p>
+   * <em>Note:</em> A value will be emitted immediately on subscribe.
+   */
+  @CheckResult @NonNull
+  public static Observable<TextViewBeforeTextChangeEvent> beforeTextChangeEvents(@NonNull TextView view) {
+    return Observable.create(new TextViewBeforeTextChangeEventOnSubscribe(view));
+  }
+
+  /**
+   * Create an observable of after text change events for {@code view}.
+   * <p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
+   * to free this reference.
+   * <p>
+   * <em>Note:</em> A value will be emitted immediately on subscribe.
+   */
+  @CheckResult @NonNull
+  public static Observable<TextViewAfterTextChangeEvent> afterTextChangeEvents(@NonNull TextView view) {
+    return Observable.create(new TextViewAfterTextChangeEventOnSubscribe(view));
   }
 
   /**
@@ -129,6 +156,81 @@ public final class RxTextView {
     return new Action1<Integer>() {
       @Override public void call(Integer textRes) {
         view.setText(textRes);
+      }
+    };
+  }
+
+  /**
+   * An action which sets the error property of {@code view} with character sequences.
+   * <p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
+   * to free this reference.
+   */
+  @CheckResult @NonNull
+  public static Action1<? super CharSequence> error(@NonNull final TextView view) {
+    return new Action1<CharSequence>() {
+      @Override public void call(CharSequence text) {
+        view.setError(text);
+      }
+    };
+  }
+
+  /**
+   * An action which sets the error property of {@code view} string resource IDs.
+   * <p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
+   * to free this reference.
+   */
+  @CheckResult @NonNull
+  public static Action1<? super Integer> errorRes(@NonNull final TextView view) {
+    return new Action1<Integer>() {
+      @Override public void call(Integer textRes) {
+        view.setError(view.getContext().getResources().getText(textRes));
+      }
+    };
+  }
+
+  /**
+   * An action which sets the hint property of {@code view} with character sequences.
+   * <p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
+   * to free this reference.
+   */
+  @CheckResult @NonNull
+  public static Action1<? super CharSequence> hint(@NonNull final TextView view) {
+    return new Action1<CharSequence>() {
+      @Override public void call(CharSequence hint) {
+        view.setHint(hint);
+      }
+    };
+  }
+
+  /**
+   * An action which sets the hint property of {@code view} string resource IDs.
+   * <p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
+   * to free this reference.
+   */
+  @CheckResult @NonNull
+  public static Action1<? super Integer> hintRes(@NonNull final TextView view) {
+    return new Action1<Integer>() {
+      @Override public void call(Integer hintRes) {
+        view.setHint(hintRes);
+      }
+    };
+  }
+
+  /**
+   * An action which sets the color property of {@code view} with color integer.
+   * <p>
+   * <em>Warning:</em> The created observable keeps a strong reference to {@code view}. Unsubscribe
+   * to free this reference.
+   */
+  @CheckResult @NonNull
+  public static Action1<? super Integer> color(@NonNull final TextView view) {
+    return new Action1<Integer>() {
+      @Override public void call(Integer color) {
+        view.setTextColor(color);
       }
     };
   }

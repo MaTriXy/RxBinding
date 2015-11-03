@@ -1,26 +1,35 @@
 package com.jakewharton.rxbinding.view;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
+import android.support.test.filters.SdkSuppress;
 import android.support.test.rule.UiThreadTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+import com.jakewharton.rxbinding.RecordingObserver;
+import com.jakewharton.rxbinding.internal.Functions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import rx.Subscription;
-import com.jakewharton.rxbinding.RecordingObserver;
 import rx.functions.Action1;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.M;
 import static android.view.MotionEvent.ACTION_DOWN;
+import static android.view.MotionEvent.ACTION_HOVER_ENTER;
+import static android.view.MotionEvent.ACTION_HOVER_EXIT;
+import static android.view.MotionEvent.ACTION_HOVER_MOVE;
 import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static com.jakewharton.rxbinding.MotionEventUtil.hoverMotionEventAtPosition;
 import static com.jakewharton.rxbinding.MotionEventUtil.motionEventAtPosition;
+import static org.junit.Assert.fail;
 
 @RunWith(AndroidJUnit4.class)
 public final class RxViewTest {
@@ -30,32 +39,15 @@ public final class RxViewTest {
   private final View view = new View(context);
 
   @Test @UiThreadTest public void clicks() {
-    RecordingObserver<Object> o = new RecordingObserver<>();
+    RecordingObserver<Void> o = new RecordingObserver<>();
     Subscription subscription = RxView.clicks(view).subscribe(o);
     o.assertNoMoreEvents(); // No initial value.
 
     view.performClick();
-    assertThat(o.takeNext()).isNotNull();
+    assertThat(o.takeNext()).isNull();
 
     view.performClick();
-    assertThat(o.takeNext()).isNotNull();
-
-    subscription.unsubscribe();
-
-    view.performClick();
-    o.assertNoMoreEvents();
-  }
-
-  @Test @UiThreadTest public void clickEvents() {
-    RecordingObserver<ViewClickEvent> o = new RecordingObserver<>();
-    Subscription subscription = RxView.clickEvents(view).subscribe(o);
-    o.assertNoMoreEvents(); // No initial value.
-
-    view.performClick();
-    assertThat(o.takeNext()).isEqualTo(ViewClickEvent.create(view));
-
-    view.performClick();
-    assertThat(o.takeNext()).isEqualTo(ViewClickEvent.create(view));
+    assertThat(o.takeNext()).isNull();
 
     subscription.unsubscribe();
 
@@ -83,6 +75,22 @@ public final class RxViewTest {
     //o.assertNoMoreEvents();
   }
 
+  @TargetApi(JELLY_BEAN)
+  @SdkSuppress(minSdkVersion = JELLY_BEAN)
+  @Test @UiThreadTest public void drawEvents() {
+    RecordingObserver<Void> o = new RecordingObserver<>();
+    Subscription subscription = RxView.draws(view).subscribe(o);
+    o.assertNoMoreEvents(); // No initial value.
+
+    view.getViewTreeObserver().dispatchOnDraw();
+    assertThat(o.takeNext()).isNull();
+
+    subscription.unsubscribe();
+
+    view.getViewTreeObserver().dispatchOnDraw();
+    o.assertNoMoreEvents();
+  }
+
   @Test @UiThreadTest public void focusChanges() {
     // We need a parent which can take focus from our view when it attempts to clear.
     LinearLayout parent = new LinearLayout(context);
@@ -107,27 +115,71 @@ public final class RxViewTest {
     o.assertNoMoreEvents();
   }
 
-  @Test @UiThreadTest public void focusChangeEvents() {
-    // We need a parent which can take focus from our view when it attempts to clear.
-    LinearLayout parent = new LinearLayout(context);
-    parent.setFocusable(true);
-    parent.addView(view);
+  @Test @UiThreadTest public void globalLayouts() {
+    RecordingObserver<Void> o = new RecordingObserver<>();
+    Subscription subscription = RxView.globalLayouts(view).subscribe(o);
+    o.assertNoMoreEvents(); // No initial value.
 
-    view.setFocusable(true);
+    view.getViewTreeObserver().dispatchOnGlobalLayout();
+    assertThat(o.takeNext()).isNull();
 
-    RecordingObserver<ViewFocusChangeEvent> o = new RecordingObserver<>();
-    Subscription subscription = RxView.focusChangeEvents(view).subscribe(o);
-    assertThat(o.takeNext()).isEqualTo(ViewFocusChangeEvent.create(view, false));
+    subscription.unsubscribe();
+    view.getViewTreeObserver().dispatchOnGlobalLayout();
 
-    view.requestFocus();
-    assertThat(o.takeNext()).isEqualTo(ViewFocusChangeEvent.create(view, true));
+    o.assertNoMoreEvents();
+  }
 
-    view.clearFocus();
-    assertThat(o.takeNext()).isEqualTo(ViewFocusChangeEvent.create(view, false));
+  @Test @UiThreadTest public void hovers() {
+    RecordingObserver<MotionEvent> o = new RecordingObserver<>();
+    Subscription subscription = RxView.hovers(view).subscribe(o);
+    o.assertNoMoreEvents();
+
+    view.dispatchGenericMotionEvent(hoverMotionEventAtPosition(view, ACTION_HOVER_ENTER, 0, 50));
+    MotionEvent event1 = o.takeNext();
+    assertThat(event1.getAction()).isEqualTo(ACTION_HOVER_ENTER);
+
+    view.dispatchGenericMotionEvent(hoverMotionEventAtPosition(view, ACTION_HOVER_MOVE, 1, 50));
+    MotionEvent event2 = o.takeNext();
+    assertThat(event2.getAction()).isEqualTo(ACTION_HOVER_MOVE);
 
     subscription.unsubscribe();
 
-    view.requestFocus();
+    view.dispatchGenericMotionEvent(hoverMotionEventAtPosition(view, ACTION_HOVER_EXIT, 1, 50));
+    o.assertNoMoreEvents();
+  }
+
+  @Test @UiThreadTest public void layoutChanges() {
+    RecordingObserver<Void> o = new RecordingObserver<>();
+    Subscription subscription = RxView.layoutChanges(view).subscribe(o);
+    o.assertNoMoreEvents();
+
+    view.layout(view.getLeft() - 5, view.getTop() - 5, view.getRight(), view.getBottom());
+    assertThat(o.takeNext()).isNull();
+
+    view.layout(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
+    o.assertNoMoreEvents();
+
+    subscription.unsubscribe();
+    view.layout(view.getLeft() - 5, view.getTop() - 5, view.getRight(), view.getBottom());
+    o.assertNoMoreEvents();
+  }
+
+  @Test @UiThreadTest public void layoutChangeEvents() {
+    RecordingObserver<ViewLayoutChangeEvent> o = new RecordingObserver<>();
+    Subscription subscription = RxView.layoutChangeEvents(view).subscribe(o);
+    o.assertNoMoreEvents();
+
+    view.layout(view.getLeft() - 5, view.getTop() - 5, view.getRight(), view.getBottom());
+    ViewLayoutChangeEvent event1 = o.takeNext();
+    assertThat(event1.view()).isSameAs(view);
+    assertThat(event1.left()).isNotSameAs(event1.oldLeft());
+    assertThat(event1.right()).isSameAs(event1.oldRight());
+
+    view.layout(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
+    o.assertNoMoreEvents();
+
+    subscription.unsubscribe();
+    view.layout(view.getLeft() - 5, view.getTop() - 5, view.getRight(), view.getBottom());
     o.assertNoMoreEvents();
   }
 
@@ -140,15 +192,15 @@ public final class RxViewTest {
     };
     parent.addView(view);
 
-    RecordingObserver<Object> o = new RecordingObserver<>();
+    RecordingObserver<Void> o = new RecordingObserver<>();
     Subscription subscription = RxView.longClicks(view).subscribe(o);
     o.assertNoMoreEvents(); // No initial value.
 
     view.performLongClick();
-    assertThat(o.takeNext()).isNotNull();
+    assertThat(o.takeNext()).isNull();
 
     view.performLongClick();
-    assertThat(o.takeNext()).isNotNull();
+    assertThat(o.takeNext()).isNull();
 
     subscription.unsubscribe();
 
@@ -156,28 +208,45 @@ public final class RxViewTest {
     o.assertNoMoreEvents();
   }
 
-  @Test @UiThreadTest public void longClickEvents() {
-    // We need a parent because long presses delegate to the parent.
-    LinearLayout parent = new LinearLayout(context) {
-      @Override public boolean showContextMenuForChild(View originalView) {
-        return true;
-      }
-    };
-    parent.addView(view);
-
-    RecordingObserver<ViewLongClickEvent> o = new RecordingObserver<>();
-    Subscription subscription = RxView.longClickEvents(view).subscribe(o);
+  @Test @UiThreadTest public void preDrawEvents() {
+    RecordingObserver<Void> o = new RecordingObserver<>();
+    Subscription subscription = RxView.preDraws(view, Functions.FUNC0_ALWAYS_TRUE).subscribe(o);
     o.assertNoMoreEvents(); // No initial value.
 
-    view.performLongClick();
-    assertThat(o.takeNext()).isEqualTo(ViewLongClickEvent.create(view));
-
-    view.performLongClick();
-    assertThat(o.takeNext()).isEqualTo(ViewLongClickEvent.create(view));
+    view.getViewTreeObserver().dispatchOnPreDraw();
+    assertThat(o.takeNext()).isNull();
 
     subscription.unsubscribe();
 
-    view.performLongClick();
+    view.getViewTreeObserver().dispatchOnPreDraw();
+    o.assertNoMoreEvents();
+  }
+
+  @TargetApi(M)
+  @SdkSuppress(minSdkVersion = M)
+  @Test @UiThreadTest public void scrollChangeEvents() {
+    RecordingObserver<ViewScrollChangeEvent> o = new RecordingObserver<>();
+    Subscription subscription = RxView.scrollChangeEvents(view).subscribe(o);
+    o.assertNoMoreEvents();
+
+    view.scrollTo(1, 1);
+    ViewScrollChangeEvent event0 = o.takeNext();
+    assertThat(event0.view()).isSameAs(view);
+    assertThat(event0.scrollX()).isEqualTo(1);
+    assertThat(event0.scrollY()).isEqualTo(1);
+    assertThat(event0.oldScrollX()).isEqualTo(0);
+    assertThat(event0.oldScrollY()).isEqualTo(0);
+
+    view.scrollTo(2, 2);
+    ViewScrollChangeEvent event1 = o.takeNext();
+    assertThat(event1.view()).isSameAs(view);
+    assertThat(event1.scrollX()).isEqualTo(2);
+    assertThat(event1.scrollY()).isEqualTo(2);
+    assertThat(event1.oldScrollX()).isEqualTo(1);
+    assertThat(event1.oldScrollY()).isEqualTo(1);
+
+    subscription.unsubscribe();
+    view.scrollTo(3, 3);
     o.assertNoMoreEvents();
   }
 
@@ -193,27 +262,6 @@ public final class RxViewTest {
     view.dispatchTouchEvent(motionEventAtPosition(view, ACTION_MOVE, 1, 50));
     MotionEvent event2 = o.takeNext();
     assertThat(event2.getAction()).isEqualTo(ACTION_MOVE);
-
-    subscription.unsubscribe();
-
-    view.dispatchTouchEvent(motionEventAtPosition(view, ACTION_UP, 1, 50));
-    o.assertNoMoreEvents();
-  }
-
-  @Test @UiThreadTest public void touchEvents() {
-    RecordingObserver<ViewTouchEvent> o = new RecordingObserver<>();
-    Subscription subscription = RxView.touchEvents(view).subscribe(o);
-    o.assertNoMoreEvents();
-
-    view.dispatchTouchEvent(motionEventAtPosition(view, ACTION_DOWN, 0, 50));
-    ViewTouchEvent event1 = o.takeNext();
-    assertThat(event1.view()).isSameAs(view);
-    assertThat(event1.motionEvent().getAction()).isEqualTo(ACTION_DOWN);
-
-    view.dispatchTouchEvent(motionEventAtPosition(view, ACTION_MOVE, 1, 50));
-    ViewTouchEvent event2 = o.takeNext();
-    assertThat(event2.view()).isSameAs(view);
-    assertThat(event2.motionEvent().getAction()).isEqualTo(ACTION_MOVE);
 
     subscription.unsubscribe();
 
@@ -284,7 +332,7 @@ public final class RxViewTest {
     assertThat(view.getVisibility()).isEqualTo(View.VISIBLE);
   }
 
-  @Test @UiThreadTest public void setVisibilityCustomFalseToVisibleThrows() {
+  @SuppressWarnings("ResourceType") @Test @UiThreadTest public void setVisibilityCustomFalseToVisibleThrows() {
     try {
       RxView.visibility(view, View.VISIBLE);
       fail();
