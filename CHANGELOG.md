@@ -1,6 +1,95 @@
 Change Log
 ==========
 
+Version 2.0.0 *(2017-03-06)*
+----------------------------
+
+This version only supports RxJava 2.
+
+ * New: Maven coordinates are now `com.jakewharton.rxbinding2:rxbinding` (et al). Package name is now
+   `com.jakewharton.rxbinding2.*`.
+ * New: Bindings which emit an initial value now return an `InitialValueObservable<T>` which offers a
+   type-safe way to skip that value via `skipInitialValue()`.
+ * Event objects which previously contained an enum now use an abstract event type and subclasses for
+   easier filtering using the `ofType(Class)` operator.
+ * Bindings which previously emitted null using the `Void` type now use `Object` and omit an opaque
+   item instance for which no guarantees are provided. You can neither rely on the emitted instance
+   being the same, equal, nor different for subsequent events.
+
+
+Version 1.0.1 *(2017-02-28)*
+----------------------------
+
+ * Fix: Reduce method count cost for Kotlin modules.
+
+
+Version 1.0.0 *(2016-12-01)*
+----------------------------
+
+ * New bindings!
+    * `rxbinding`:
+       * `Toolbar`:
+          * `title` - Toolbar title.
+          * `titleRes` - Toolbar title from resource.
+          * `subtitle` - Toolbar subtitle.
+          * `subtitleRes` - Toolbar subtitle from resource.
+       * `View`:
+          * `keys` - View key events.
+    * `rxbinding-appcompat-v7`:
+       * `Toolbar`:
+          * `title` - Toolbar title.
+          * `titleRes` - Toolbar title from resource.
+          * `subtitle` - Toolbar subtitle.
+          * `subtitleRes` - Toolbar subtitle from resource.
+    * `rxbinding-design`:
+       * `BottomNavigationView`:
+          * `itemSelections` - Navigation item selections.
+    * `rxbinding-support-v4`:
+       * `NestedScrollView`:
+          * `scrollChangeEvents` - Nested scrolling change events.
+       * `SlidingPaneLayout`:
+          * `open` - Opens the panel.
+          * `panelOpens` - Sliding panel opens.
+          * `panelSlides` - Sliding panel open offsets.
+       * `ViewPager`:
+          * `pageScrollStateChanges` - Page scrolling change events.
+          * `currentItem` - Sets the current page item.
+ * New: `rxbinding-support-v4` now only depends on `support-core-ui`.
+ * Fix: Kotlin `Action` generic types now properly allow nulls when applicable.
+ * Fix: Correct nullability of `TextViewAfterTextChangeEvent`'s `editable` property.
+ * Fix: Correct nullability of `TextViewEditorActionEvent`'s `keyEvent` property.
+
+
+Version 0.4.0 *(2016-02-18)*
+----------------------------
+
+ * New bindings!
+    * `rxbinding`:
+       * `RxAbsListView`:
+          * `scrollEvents` - List scroll events.
+       * `RxAutoCompleteTextView`:
+          * `completionHint` - Sets the hint text at the bottom of the suggestion list.
+          * `threshold` - Sets the minimum number of characters before suggestions are shown.
+       * `RxPopupMenu`:
+          * `itemClicks` - Menu item clicks.
+          * `dismisses` - Menu item dismissal.
+    * `rxbinding-appcompat-v7`:
+       * `RxActionMenuView`:
+          * `itemClicks` - Menu item clicks.
+       * `RxPopupMenu`:
+          * `itemClicks` - Menu item clicks.
+          * `dismisses` - Menu item dismissal.
+    * `rxbinding-design`:
+       * `RxTextInputLayout`:
+          * `error` - Sets the error text for the text input.
+          * `errorRes` - Sets the error text resource for the text input.
+    * `rxbinding-support-v4`:
+       * `RxMenuItemCompat`:
+          * `actionViewEvents`- Menu item action view events.
+ * Update Kotlin modules dependency to v1.0.0.
+ * Fix: Remove 76 needless synthetic accessor methods.
+
+
 Version 0.3.0 *(2015-10-22)*
 ----------------------------
 

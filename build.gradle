@@ -2,6 +2,7 @@ subprojects {
   buildscript {
     repositories {
       mavenCentral()
+      jcenter()
     }
   }
 
@@ -9,11 +10,25 @@ subprojects {
     mavenCentral()
   }
 
+  plugins.apply('checkstyle')
+
+  task('checkstyle', type: Checkstyle) {
+    configFile rootProject.file('checkstyle.xml')
+    source 'src/main/java'
+    ignoreFailures false
+    showViolations true
+    include '**/*.java'
+
+    classpath = files()
+  }
+
   group = GROUP
   version = VERSION_NAME
 
-  // The default 'assemble' task only applies to normal variants. Add test variants as well.
   afterEvaluate {
+    tasks.findByName('check').dependsOn('checkstyle')
+
+    // The default 'assemble' task only applies to normal variants. Add test variants as well.
     android.testVariants.all { variant ->
       tasks.getByName('assemble').dependsOn variant.assemble
     }
@@ -29,30 +44,4 @@ subprojects {
   }
 }
 
-ext {
-  androidPlugin = 'com.android.tools.build:gradle:1.3.1'
-  minSdkVersion = 14
-  compileSdkVersion = 23
-  buildToolsVersion = '23.0.1'
-
-  ci = 'true'.equals(System.getenv('CI'))
-
-  kotlinPlugin = 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.0-beta-1038'
-  kotlinStdlib = 'org.jetbrains.kotlin:kotlin-stdlib:1.0.0-beta-1038'
-
-  supportAnnotations = 'com.android.support:support-annotations:23.1.0'
-  supportV4 = 'com.android.support:support-v4:23.1.0'
-  supportRecyclerView = 'com.android.support:recyclerview-v7:23.1.0'
-  supportAppCompat = 'com.android.support:appcompat-v7:23.1.0'
-  supportDesign = 'com.android.support:design:23.1.0'
-  supportLeanback = 'com.android.support:leanback-v17:23.1.0'
-
-  supportTestRunner = 'com.android.support.test:runner:0.4'
-  supportTestRules = 'com.android.support.test:rules:0.4'
-  supportTestEspresso = 'com.android.support.test.espresso:espresso-core:2.2.1'
-  supportTestEspressoContrib = 'com.android.support.test.espresso:espresso-contrib:2.2.1'
-  rxJava = 'io.reactivex:rxjava:1.0.14'
-  rxAndroid = 'io.reactivex:rxandroid:1.0.1'
-  junit = 'junit:junit:4.12'
-  truth = 'com.google.truth:truth:0.27'
-}
+apply from: rootProject.file('dependencies.gradle')

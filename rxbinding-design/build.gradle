@@ -11,13 +11,14 @@ dependencies {
   compile project(':rxbinding')
   compile rootProject.ext.supportDesign
 
+  provided rootProject.ext.autoValueAnnotations
+  annotationProcessor rootProject.ext.autoValue
+
   androidTestCompile project(':testing-utils')
   androidTestCompile rootProject.ext.supportTestRunner
   androidTestCompile rootProject.ext.supportTestRules
   androidTestCompile rootProject.ext.supportTestEspresso
-  androidTestCompile rootProject.ext.supportTestEspressoContrib
   androidTestCompile rootProject.ext.rxAndroid
-  androidTestCompile rootProject.ext.truth
 }
 
 android {
@@ -48,10 +49,6 @@ android {
     debug {
       testCoverageEnabled true
     }
-  }
-
-  packagingOptions {
-    exclude 'LICENSE.txt'
   }
 }
 
