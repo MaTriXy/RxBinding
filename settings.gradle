@@ -1,21 +1,13 @@
 rootProject.name = 'rxbinding-root'
 
 include ':rxbinding'
-include ':rxbinding-kotlin'
-
-include ':rxbinding-appcompat-v7'
-include ':rxbinding-appcompat-v7-kotlin'
-
-include ':rxbinding-design'
-include ':rxbinding-design-kotlin'
-
-include ':rxbinding-support-v4'
-include ':rxbinding-support-v4-kotlin'
-
-include ':rxbinding-recyclerview-v7'
-include ':rxbinding-recyclerview-v7-kotlin'
-
-include ':rxbinding-leanback-v17'
-include ':rxbinding-leanback-v17-kotlin'
-
+include ':rxbinding-appcompat'
+include ':rxbinding-core'
+include ':rxbinding-drawerlayout'
+include ':rxbinding-leanback'
+include ':rxbinding-material'
+include ':rxbinding-recyclerview'
+include ':rxbinding-slidingpanelayout'
+include ':rxbinding-swiperefreshlayout'
+include ':rxbinding-viewpager'
 include ':testing-utils'

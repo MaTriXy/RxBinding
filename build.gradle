@@ -1,33 +1,55 @@
-subprojects {
-  buildscript {
-    repositories {
-      mavenCentral()
-      jcenter()
-    }
+buildscript {
+  dependencies {
+    classpath 'com.android.tools.build:gradle:3.2.1'
+    classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.71'
   }
+
+  ext.buildConfig = [
+    'minSdkVersion': 14,
+    'compileSdkVersion': 28,
+  ]
+  ext.deps = [
+    'kotlinStdlib': 'org.jetbrains.kotlin:kotlin-stdlib:1.2.71',
+
+    'androidXAnnotations': 'androidx.annotation:annotation:1.0.0',
+    'androidXAppCompat': 'androidx.appcompat:appcompat:1.0.0',
+    'androidXCore': 'androidx.core:core:1.0.0',
+    'androidXDrawerLayout': 'androidx.drawerlayout:drawerlayout:1.0.0',
+    'androidXLeanback': 'androidx.leanback:leanback:1.0.0',
+    'androidXRecyclerView': 'androidx.recyclerview:recyclerview:1.0.0',
+    'androidXSlidingPaneLayout': 'androidx.slidingpanelayout:slidingpanelayout:1.0.0',
+    'androidXSwipeRefreshLayout': 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0',
+    'androidXViewPager': 'androidx.viewpager:viewpager:1.0.0',
+
+    'androidXTestRunner': 'androidx.test:runner:1.1.0-beta02',
+    'androidXTestRules': 'androidx.test:rules:1.1.0-beta02',
+    'androidXTestEspresso': 'androidx.test.espresso:espresso-core:3.1.0-beta02',
+    'androidXTestEspressoContrib': 'androidx.test.espresso:espresso-contrib:3.1.0-beta02',
+
+    'googleMaterial': 'com.google.android.material:material:1.0.0',
+
+    'rxJava': 'io.reactivex.rxjava2:rxjava:2.2.2',
+    'rxAndroid': 'io.reactivex.rxjava2:rxandroid:2.1.0',
+
+    'junit': 'junit:junit:4.12',
+  ]
 
   repositories {
-    mavenCentral()
+    jcenter()
+    google()
   }
+}
 
-  plugins.apply('checkstyle')
-
-  task('checkstyle', type: Checkstyle) {
-    configFile rootProject.file('checkstyle.xml')
-    source 'src/main/java'
-    ignoreFailures false
-    showViolations true
-    include '**/*.java'
-
-    classpath = files()
+subprojects {
+  repositories {
+    jcenter()
+    google()
   }
 
   group = GROUP
   version = VERSION_NAME
 
   afterEvaluate {
-    tasks.findByName('check').dependsOn('checkstyle')
-
     // The default 'assemble' task only applies to normal variants. Add test variants as well.
     android.testVariants.all { variant ->
       tasks.getByName('assemble').dependsOn variant.assemble
@@ -43,5 +65,3 @@ subprojects {
     }
   }
 }
-
-apply from: rootProject.file('dependencies.gradle')

@@ -1,6 +1,57 @@
 Change Log
 ==========
 
+Version 3.0.0-alpha1 *(2018-10-17)*
+-----------------------------------
+
+ * New: Maven coordinates are now `com.jakewharton.rxbinding3:rxbinding` (et al). Package name is now
+   `com.jakewharton.rxbinding3.*`.
+ * New: AndroidX support! The library is now AndroidX-only. For use with the old support libraries use version 2.2.0.
+ * New: Library is now Kotlin-first and `-kotlin` artifacts are gone. Java callers get the same API as before. Kotlin
+   callers get the extension-based API. Event classes are now Kotlin `data` classes instead of using AutoValue. RxJava's
+   `Predicate` and Java's `Callable` are no longer used and are replaced by Kotlin functional types. For Java callers
+   these can still be used as `Function1` but the use of lambdas is encouraged.
+ * New: Observables which signal an event without any information use `Unit` instead of `Object`. (Note: This was
+   always true for Kotlin extension users)
+ * All deprecated methods have been removed.
+ * Some trivial consumer factories have been removed. You can subscribe lambdas to the stream to replicate their functionality.
+
+
+Version 2.2.0 *(2018-09-25)*
+----------------------------
+
+ * New bindings!
+    * `rxbinding-support-v4`:
+       * `ViewPager`:
+          * `pageScrollEvents`
+    * `rxbinding-recyclerview-v7`:
+       * `RecyclerView`:
+          * `flingEvents`
+ * New: Target Java 8 bytecode. Use AGP 3.2 or newer and enable Java 8 source/target compatibility.
+ * Deprecate `RxMenuItemCompat` which is no longer needed. Use `RxMenuItem` directly.
+ * Deprecate more simple consumers which delegate directly to a method. You should use method references for these instead. For example, `RxView.enabled(view)` becomes `view::setEnabled`.
+
+
+Version 2.1.1 *(2018-02-12)*
+----------------------------
+
+ * Fix: Include consumer ProGuard rules to prevent warning about AutoValue annotation.
+ * Fix: Useless `BuildConfig` classes are no longer included.
+ * Fix: Eliminate Java interop checks for Kotlin extensions as they're only for Kotlin consumers and the checks exist in the Java code they delegate to anyway.
+
+
+Version 2.1.0 *(2018-01-30)*
+----------------------------
+
+ * New bindings!
+    * `rxbinding-design`:
+       * `FloatingActionButton`:
+          * `visibility`: Shows or hides FAB.
+ * Use add/remove callback for Snackbar dismisses.
+ * Deprecate simple consumers which delegate directly to a method. You should use method references for these instead. For example, `RxView.enabled(view)` becomes `view::setEnabled`.
+ * Fix: Propagate `@RequiresApi` annotations to Kotlin extensions.
+
+
 Version 2.0.0 *(2017-03-06)*
 ----------------------------
 
