@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.jakewharton.rxbinding3">
+    package="com.jakewharton.rxbinding4">
 
   <application>
     <activity android:name=".view.RxViewAttachTestActivity"/>
@@ -9,6 +9,7 @@
     <activity android:name=".widget.RxAbsListViewTestActivity"/>
     <activity android:name=".widget.RxAutoCompleteTextViewTestActivity"/>
     <activity android:name=".widget.RxRatingBarTestActivity"/>
+    <activity android:name=".widget.RxSearchViewTestActivity"/>
     <activity android:name=".widget.RxSeekBarTestActivity"/>
     <activity android:name=".widget.RxPopupMenuTestActivity"/>
     <activity
